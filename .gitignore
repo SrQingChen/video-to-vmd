@@ -1,0 +1,41 @@
+# ---- Python ----
+.venv/
+.cache/
+.tmp/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# ---- third-party assets (not redistributable / restored by setup) ----
+third_party/
+models/
+body_models/
+shim_src_*.tar.gz
+
+# ---- test media / models / outputs ----
+testdata/**/*.mp4
+testdata/**/*.vmd
+testdata/**/*.pmx
+testdata/**/*.fbx
+testdata/**/*.png
+testdata/**/*.jpg
+*.pmx
+*.vmd
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.blend
+*.blend1
+*.mp4
+*.npz
+*.pt
+
+# ---- generated ----
+outputs/
+runs/
+profiles/
+logs/
+.claude/

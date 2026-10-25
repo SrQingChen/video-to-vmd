@@ -1,0 +1,34 @@
+{
+  "models": {
+    "tiflos": {
+      "display": "提弗洛斯",
+      "pmx": "E:/zcodeAI项目/AIblender/【明日方舟：终末地】提弗洛斯_by_茶叶味香皂_c516269d2bf99b69e002c9f99cbcbc91/提弗洛斯.pmx",
+      "blend": "E:/zcodeAI项目/AIblender/三人_妄想天使_cx2_最终.blend",
+      "collection": "CHR_提弗洛斯",
+      "armature": "提弗洛斯_arm"
+    },
+    "luoxi": {
+      "display": "洛茜",
+      "pmx": "E:/zcodeAI项目/AIblender/【明日方舟：终末地】洛茜_by_茶叶味香皂_78863d5f02fa2c44ced5a2c4de44e68a/洛茜.pmx",
+      "blend": "E:/zcodeAI项目/AIblender/三人_妄想天使_cx2_最终.blend",
+      "collection": "CHR_洛茜",
+      "armature": "洛茜_arm"
+    },
+    "si": {
+      "display": "祀",
+      "pmx": "E:/zcodeAI项目/AIblender/【明日方舟：终末地】祀_by_茶叶味香皂_ea803c2429de15a49d2b457b9cea9738/祀.pmx",
+      "blend": "E:/zcodeAI项目/AIblender/三人_王牌竞速_20261024.blend",
+      "collection": "CHR_祀",
+      "armature": "祀_arm"
+    }
+  },
+  "vmd": {
+    "R1": "testdata/R1_妄想天使/动作.vmd",
+    "R2": "testdata/R2_王牌竞速/动作＋表情.vmd",
+    "R3": "testdata/R3_花火主播/火花带表情.vmd"
+  },
+  "synth": {
+    "default_camera": "CAM 03 | Character full-body",
+    "max_frames": 120
+  }
+}

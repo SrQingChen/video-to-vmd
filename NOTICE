@@ -1,0 +1,9 @@
+VTV (video-to-vmd)
+Copyright 2026 SrQingChen
+
+Licensed under the Apache License, Version 2.0 (the "License"); see LICENSE.
+This distribution references third-party software and model licenses; see
+THIRD_PARTY_NOTICES.md and MODEL_LICENSES.md.
+
+No third-party model weights, PMX models, VMD motions, SMPL/SMPL-X body
+models, or test videos are redistributed by this repository.
