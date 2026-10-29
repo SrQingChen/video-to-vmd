@@ -13,6 +13,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)](pyproject.toml)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0EA5E9?style=for-the-badge&logo=windows&logoColor=white)](#快速开始)
 [![Status](https://img.shields.io/badge/Status-Research%20Preview-EF4444?style=for-the-badge)](#当前边界)
+[![CI](https://github.com/SrQingChen/video-to-vmd/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SrQingChen/video-to-vmd/actions/workflows/ci.yml)
 
 [![R3 held-out](https://img.shields.io/badge/R3%20held--out-24.59%C2%B0-7C3AED?style=for-the-badge)](#数据与结果)
 [![VMD](https://img.shields.io/badge/VMD-53%20tracks-111827?style=for-the-badge)](#数据与结果)
