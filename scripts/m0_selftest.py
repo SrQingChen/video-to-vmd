@@ -120,6 +120,25 @@ def main():
     else:
         print("SKIP closed loop (run scripts/closed_loop.py first)")
 
+    # ---- D-chain / inherit regression -----------------------------------
+    # MMD reconstructs the leg D chain (mesh weights live there) from 付与;
+    # Blender must bake it.  The pure part catches helper tracks in the MMD
+    # assets; the Blender part (opt-in) catches a broken bake.
+    sys.path.insert(0, os.path.join(ROOT, "tests"))
+    try:
+        import test_inherit_bake as tinh
+        tinh.FAILS.clear()
+        tinh.pure_checks()
+        check("inherit_pure_checks", not tinh.FAILS, tinh.FAILS)
+        if os.environ.get("VTV_RUN_BLENDER_TESTS") == "1":
+            tinh.FAILS.clear()
+            tinh.blender_check()
+            check("inherit_blender_check", not tinh.FAILS, tinh.FAILS)
+        else:
+            print("SKIP inherit blender check (set VTV_RUN_BLENDER_TESTS=1)")
+    except Exception as exc:  # noqa: BLE001 - report, don't hide other checks
+        check("inherit_pure_checks", False, exc)
+
     print()
     if FAILS:
         print("M0 SELFTEST FAILED:", FAILS)

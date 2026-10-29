@@ -1,0 +1,22 @@
+# M3 (hands/face) runtime dependencies.
+#
+# MediaPipe 1.1.1 pulls numpy 2.x and opencv-contrib-python 5.x by default.
+# Both break the rest of this project (torch 2.3.0 is built against numpy 1.x
+# and cv2 5.0 requires numpy>=2).  Install in this order:
+#
+#   pip install mediapipe==1.1.1
+#   pip uninstall -y opencv-contrib-python
+#   pip install --force-reinstall --no-deps opencv-python==4.11.0.86
+#   pip install "numpy==1.26.4"
+#
+# Then verify:
+#   python -c "import numpy, cv2, torch, mediapipe; print(numpy.__version__, cv2.__version__, torch.__version__, mediapipe.__version__)"
+#
+# Model bundles (not redistributed, download once):
+#   models/mediapipe/hand_landmarker.task
+#     https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+#   models/mediapipe/face_landmarker.task
+#     https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task
+mediapipe==1.1.1
+numpy>=1.23.5,<2
+opencv-python==4.11.0.86

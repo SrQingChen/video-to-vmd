@@ -1,0 +1,19 @@
+# Core runtime dependencies for the M5 one-command pipeline (short + long video).
+#
+# Tested with Python 3.10.11 on Windows 11 (RTX 4060 Laptop 8GB).
+# The full environment (GVHMR, its requirements, torch cu121) is installed by
+# `scripts/bootstrap_env.sh`; this file is the pip list for the VTV code path
+# (GVHMR itself is installed by the bootstrap script).  ffmpeg and Blender are
+# external tools, not pip packages; see docs/M5_使用指南.md.
+#
+# torch must come from the cu121 wheel index:
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.3.0+cu121
+torchvision==0.18.0+cu121
+
+# MediaPipe 1.1.1 pulls numpy 2.x / opencv-contrib 5.x by default; the pinned
+# versions below are the combination that works with torch 2.3.0 (see
+# requirements-m3.txt for the exact uninstall/reinstall order).
+numpy>=1.23.5,<2
+opencv-python==4.11.0.86
+mediapipe==1.1.1

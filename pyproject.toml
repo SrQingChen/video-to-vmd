@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vtv"
+version = "0.5.0"
+description = "High-fidelity monocular video to MMD VMD pipeline (research tool)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-only" }
+authors = [{ name = "SrQingChen" }]
+keywords = ["vmd", "mmd", "motion-capture", "gvhmr", "research"]
+classifiers = [
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Multimedia :: Video",
+]
+# Torch is intentionally not listed: it must come from the cu121 wheel index
+# (see requirements.txt / scripts/bootstrap_env.sh).  These are the runtime
+# libraries the VTV code itself imports directly.
+dependencies = [
+  "numpy>=1.23.5,<2",
+  "opencv-python==4.11.0.86",
+  "mediapipe==1.1.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+# The full pipeline additionally needs the research backends (GVHMR, SMPL-X,
+# Blender+MMD Tools, ffmpeg) described in docs/M5_使用指南.md; they are not pip
+# dependencies of this package.
+
+[project.scripts]
+vtv = "vtv.cli:main"
+
+[project.urls]
+Documentation = "docs/M5_使用指南.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+vtv = ["mmd/LICENSE.mmd2gltf"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

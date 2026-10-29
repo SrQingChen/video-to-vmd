@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "models": [
+    "si",
+    "luoxi",
+    "tiflos"
+  ],
+  "slow_factor": 1.0,
+  "gvhmr": {
+    "static_cam": true
+  },
+  "hand": {
+    "input_size": 640,
+    "conf": 0.12,
+    "overlays": 0
+  },
+  "face": {
+    "input_size": 512,
+    "conf": 0.2,
+    "overlays": 0
+  },
+  "feedback": {
+    "mode": "v2",
+    "ckpt": "outputs/m35/net/m35_best.pt",
+    "ckpt_v2": "outputs/m6/net/m6_v2_hf_ft_best.pt",
+    "modes": {
+      "off": {
+        "torso_gain": 0.0,
+        "arm_gain": 0.0,
+        "smooth": 1,
+        "apply_root": false,
+        "apply_hands": false,
+        "apply_face": false
+      },
+      "default": {
+        "torso_gain": 0.85,
+        "arm_gain": 0.2,
+        "smooth": 3,
+        "apply_root": false,
+        "apply_hands": false,
+        "apply_face": false
+      },
+      "full": {
+        "torso_gain": 0.85,
+        "arm_gain": 0.3,
+        "smooth": 3,
+        "apply_root": false,
+        "apply_hands": true,
+        "apply_face": true
+      },
+      "v2": {
+        "torso_gain": 0.85,
+        "arm_gain": 0.3,
+        "smooth": 3,
+        "apply_root": false,
+        "apply_hands": false,
+        "apply_face": false
+      },
+      "v2_full": {
+        "torso_gain": 0.85,
+        "arm_gain": 0.3,
+        "smooth": 3,
+        "apply_root": false,
+        "apply_hands": true,
+        "apply_face": true
+      }
+    },
+    "overrides": {},
+    "fallback": {
+      "enabled": true,
+      "window_frames": 30,
+      "max_passes": 3,
+      "ramp": 3
+    },
+    "fallback_v2": {
+      "enabled": true,
+      "window_frames": 30,
+      "max_passes": 3,
+      "ramp": 3,
+      "arm_torso_check": false
+    }
+  },
+  "render": {
+    "enabled": true,
+    "blender": "D:/blender/blender.exe",
+    "ffmpeg": "D:/ffmpeg/bin/ffmpeg.exe",
+    "res": "1440x2560",
+    "frames": "70:230",
+    "samples": 12,
+    "view": "front",
+    "fps": 30,
+    "stills": [
+      77,
+      79,
+      81,
+      85,
+      87,
+      91,
+      114,
+      128,
+      160,
+      184,
+      222
+    ],
+    "retries": 2,
+    "blend": "E:/zcodeAI项目/AIblender/三人_王牌竞速_20261024.blend",
+    "bbox_scope": null,
+    "bbox_frames": 0,
+    "boundary": null,
+    "boundary_half": 30
+  },
+  "chunking": {
+    "enabled": true,
+    "chunk_seconds": 10.0,
+    "overlap_seconds": 1.0,
+    "min_tail_seconds": 1.0
+  },
+  "qc": {
+    "heldout_reference": "outputs/m35/eval/report_default.json",
+    "heldout_reference_v2": "outputs/m6/eval/report_m6_final_body03_noproxy.json",
+    "world_warn_deg": 2.0,
+    "position_warn_pct_height": 0.2
+  }
+}

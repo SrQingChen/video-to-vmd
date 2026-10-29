@@ -207,6 +207,9 @@ def save_results(cfg, pred, data):
         "bbx_xyxy": torch.load(cfg.paths.bbx)["bbx_xyxy"].cpu().numpy(),
         "K_fullimg": data["K_fullimg"].cpu().numpy(),
         "cam_angvel": data["cam_angvel"].cpu().numpy(),
+        # Keeping the ViTPose COCO-17 evidence in the npz makes the 2D
+        # reprojection stage self-contained (no re-run of preprocessing).
+        "kp2d": data["kp2d"].cpu().numpy(),
     }
     for key in ("smpl_params_global", "smpl_params_incam"):
         val = pred.get(key)

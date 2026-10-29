@@ -1,9 +1,15 @@
 VTV (video-to-vmd)
 Copyright 2026 SrQingChen
 
-Licensed under the Apache License, Version 2.0 (the "License"); see LICENSE.
+This project is licensed under the GNU General Public License, version 3 only
+(GPL-3.0-only); see LICENSE. Copyright (C) 2026 SrQingChen.
 This distribution references third-party software and model licenses; see
-THIRD_PARTY_NOTICES.md and MODEL_LICENSES.md.
+THIRD_PARTY_NOTICES.md and MODEL_LICENSES.md. Those components remain under
+their own licenses and are not relicensed by this project.
 
 No third-party model weights, PMX models, VMD motions, SMPL/SMPL-X body
-models, or test videos are redistributed by this repository.
+models, or test videos are redistributed by this repository. The optional
+project-trained M3.5 feedback checkpoint (outputs/m35/net/m35_best.pt) and M6
+v2 checkpoint (outputs/m6/net/m6_v2_hf_ft_best.pt) are not redistributed
+either; they inherit the research/non-commercial constraints of GVHMR and
+SMPL-X.

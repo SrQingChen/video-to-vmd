@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "status": "template",
+  "note": "发布 demo 时把 assets 填成实际 CC0/CC-BY 素材；仓库不携带视频/PMX/VMD/权重。",
+  "allowed_licenses": ["CC0-1.0", "CC-BY-4.0"],
+  "assets": [],
+  "pipeline": {
+    "video": "demo/assets/demo_long_80s.mp4",
+    "models": ["<cc0-or-ccby-model-key>"],
+    "feedback": "default",
+    "chunk_seconds": 10,
+    "overlap_seconds": 1,
+    "render": true,
+    "render_boundary": 0,
+    "resolution": "1440x2560",
+    "samples": 12
+  },
+  "expected_artifacts": [
+    "models/<model>/final.vmd",
+    "models/<model>/qc.json",
+    "models/<model>/render/before/*.mp4",
+    "models/<model>/render/after/*.mp4",
+    "qc/summary.md",
+    "qc/summary.json"
+  ],
+  "checks": [
+    "task_gate=PASS",
+    "boundary_continuity=PASS (chunked run)",
+    "VMD 53 tracks / 30 fingers / 4 IK off / no D-helper / finger translation 0",
+    "2K framing ok (no body part leaves the image)",
+    "secondary cost reported explicitly (not hidden)"
+  ]
+}
