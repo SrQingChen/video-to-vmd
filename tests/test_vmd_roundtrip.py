@@ -46,7 +46,8 @@ class TestVmdRoundtrip(unittest.TestCase):
             self.assertEqual(got, curves[b][0] + curves[b][1])
 
     def _check(self, path):
-        self.assertTrue(os.path.exists(path), path)
+        if not os.path.exists(path):
+            self.skipTest(f"local VMD fixture not redistributed: {path}")
         src, dst = _roundtrip(path)
         self.assertEqual(src["model_name"], dst["model_name"])
         src_bones = {_norm(k): v for k, v in src["bones"].items()}
