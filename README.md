@@ -1,135 +1,132 @@
-# VTV — Video to VMD
+<div align="center">
 
-**Author:** SrQingChen
-**License:** GPL-3.0-only
-**Status:** v0.5.0 research preview
+<img src="assets/banner.svg" alt="VTV — Video to VMD" width="100%"/>
 
-VTV turns a monocular dance video into a VMD that can be loaded directly on complex,
-standard-bone PMX characters. It is built for the end-to-end case that generic
-video-to-VMD tools usually leave unsolved: **target-model mismatch, unstable
-feedback, long clips, and reproducible export/QC**.
+# 视频 → VMD
 
----
+**面向复杂 PMX 的结构化动作迁移、后馈纠正与可复现产线**
 
-## Why this project
+把单目舞蹈视频转换成可以直接套到提弗洛斯 / 洛茜 / 祀等标准骨骼 PMX 上的 VMD。
+不是“关键点换个骨名”，而是把**目标模型适配、结构后馈、长视频 QC、可复现导出**做成一条完整链路。
 
-Most video-to-VMD pipelines stop at “keypoints → bone names → VMD”. On real
-characters—especially anime/game PMX models with P/C shoulders, leg D-chains,
-twist helpers, IK, non-uniform rest poses and per-model morphs—the result is often:
+[![License](https://img.shields.io/badge/License-GPL--3.0--only-22c55e?style=for-the-badge&logo=gnu&logoColor=white)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)](pyproject.toml)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0EA5E9?style=for-the-badge&logo=windows&logoColor=white)](#快速开始)
+[![Status](https://img.shields.io/badge/Status-Research%20Preview-EF4444?style=for-the-badge)](#当前边界)
 
-- legs detached from the intended chain, arms reversed, shoulders collapsing;
-- joints that look plausible in isolation but are wrong relative to the torso;
-- jitter, spike frames and depth-flipped limbs;
-- VMDs that only work on the model used for development.
+[![R3 held-out](https://img.shields.io/badge/R3%20held--out-24.59%C2%B0-7C3AED?style=for-the-badge)](#数据与结果)
+[![VMD](https://img.shields.io/badge/VMD-53%20tracks-111827?style=for-the-badge)](#数据与结果)
+[![Long video](https://img.shields.io/badge/Long%20video-2420%20frames-F59E0B?style=for-the-badge)](#数据与结果)
+[![Data](https://img.shields.io/badge/Paired%20data-18%2C430%20frames-0F766E?style=for-the-badge)](#数据与结果)
 
-VTV treats the **target PMX model** and **temporal/structural correctness** as
-first-class problems, not as a post-processing afterthought.
+**作者：SrQingChen**
+
+</div>
 
 ---
 
-## What is different from typical video→VMD tools
+## 这个项目解决什么
 
-*This table describes design priorities, not a measured head-to-head benchmark
-against every existing tool.*
+通用 video→VMD 工具通常停在“2D 关键点 → MMD 骨名 → 写 VMD”。但真正套到复杂 PMX 上时，问题往往不是“没有动作”，而是：
 
-| Capability | Typical video→VMD pipeline | VTV |
+- 腿的 D 链、肩 P/C、捩骨、IK、rest pose 没有对齐，模型看起来像被拆开；
+- 动作在局部看起来正常，但相对躯干是错的；
+- 毛刺帧、深度翻转、遮挡恢复跳变；
+- 单段能跑，长视频接缝处断裂；
+- 输出只能在自己调试的模型上成立。
+
+VTV 把这些**目标模型与结构问题**放在第一位，而不是只做一个关键点重定向器。
+
+---
+
+## 与传统 video→VMD 方案的差异
+
+> 下表描述设计重点，不是对每个现有工具的同条件横评。
+
+| 能力 | 常见方案 | VTV |
 |---|---|---|
-| Target model | keypoint-to-bone-name mapping | per-model PMX adapter: rest pose, P/C, D-chain, twist, IK, scale, morph aliases |
-| Mismatch diagnosis | usually visual | compatibility report + safe writable-bone set; failures traceable to a specific bone/rest/inherit/IK item |
-| Feedback | raw keypoints or smoothing | learned structural residual network trained on paired GT; no pixel/silhouette comparison |
-| Validation | visual / no GT | synthetic paired GT, held-out motion/model/view, per-bone + contact + temporal gates |
-| Long clips | one clip at a time | 10 s chunks + overlap, root alignment, VMD merge, 24 seam checks + per-chunk QC |
-| Output contract | body-only or unknown helper tracks | 53 tracks (23 body + 30 fingers) + morphs, 4 IK off, no D/helper tracks, zero finger translation |
-| Reproducibility | GUI/cloud, not inspectable | CLI, cache/checkpoint, manifests, QC JSON/Markdown, fixed-camera evidence |
+| 目标模型适配 | 骨名映射为主 | 每模型 PMX adapter：rest、P/C、D 链、twist、IK、缩放、morph 别名 |
+| 错配诊断 | 主要靠肉眼 | compatibility report + safe writable-bone set；可定位到具体骨/继承/IK 项 |
+| 后馈信号 | 原始关键点或平滑 | 结构残差网络；训练用配对 GT，推理不依赖像素/剪影 |
+| 验证方式 | 视觉检查为主 | 合成配对 GT、整段留出、逐骨 + 接触 + 时序门禁 |
+| 长视频 | 通常单段处理 | 10 秒段 + 1 秒重叠、根对齐、VMD 合并、接缝/段级 QC |
+| 输出契约 | 身体轨或未知 helper | 53 轨（23 身体 + 30 手指）+ morph；IK off；无 D/helper；手指位移 0 |
+| 可复现性 | GUI/云端黑盒 | CLI、缓存/断点、manifest、QC JSON/Markdown、固定机位证据 |
 
-The main technical bet is **cross-identity structural feedback**: the video
-character and the target PMX never share an appearance, so RGB/silhouette
-comparison is invalid. VTV compares structure—2D joints, limb directions, joint
-angles, contact and temporal behaviour—in the target model's space.
+核心技术取向是 **跨身份结构后馈**：视频角色与目标 PMX 不可能共享外观，因此 RGB/剪影比对没有意义；VTV 在目标模型空间比较关节、肢体方向、接触和时序。
 
 ---
 
-## Evidence and data
+## 数据与结果
 
-### Paired data engine
+### 配对数据引擎
 
-| Item | Current result |
+| 项目 | 当前结果 |
 |---|---|
-| Paired clips | **77 segments** (R1/R2/R3 × 3 PMX models × fixed cameras + training-only views/augmentations) |
-| Split | **58 train / 10 val / 9 test**; R3 is an entire held-out motion, never trained or tuned |
-| Training frames | **18,430** (2.43× the first M3.5 dataset) |
-| Hand supervision | **3,180 L0/L1 frames** (6,361 side-frames), up from 462 |
-| Ground truth | three-model body + 30 finger tracks + model-specific morphs |
-| Leakage | whole-motion/model/view split; audit passes with 0 problems |
-| Teacher reachability | v2 teacher on R3: **2.34° → 0.06°**, 0 clipped factors |
+| 配对片段 | **77 段**（R1/R2/R3 × 3 模型 × 固定机位 + 训练专用视角/增强） |
+| 数据划分 | **58 train / 10 val / 9 test**；R3 整段留出，不参与训练/调参 |
+| 训练帧数 | **18,430 帧**（首个版本的 2.43 倍） |
+| 手部监督 | **3,180 个 L0/L1 帧**（6,361 side-frames），从 462 帧扩展 |
+| GT 构成 | 三模型身体 + 30 手指 + 每模型实际存在的 morph |
+| 泄漏审计 | 按动作/模型/机位整段拆分，0 problems |
+| 教师可达性 | v2 教师在 R3 上 **2.34° → 0.06°**，0 个因子被裁剪 |
 
-### Learned structural feedback (M6 v2, production default)
+### M6 v2 结构后馈（当前生产默认）
 
-| Metric | Baseline (cleanup+IK+M3) | VTV v2 | Change |
+| 指标 | 基线（cleanup+IK+M3） | VTV v2 | 变化 |
 |---|---:|---:|---:|
-| R3 held-out body-relative main | 37.55° | **24.59°** | **−34.5%** |
-| chest group | 43.67° | **12.76°** | −30.91° |
-| upperarm group | 30.68° | **25.74°** | −4.94° |
-| forearm group | 38.30° | **35.25°** | −3.05° |
-| world angle (secondary) | 68.65° | 67.79° | **−0.86°** |
-| 3D position (secondary) | 8.08%H | 7.95%H | **−0.13%H** |
-| contact recall / slide / penetration | — | — | unchanged |
+| R3 留出 body-relative main | 37.55° | **24.59°** | **−34.5%** |
+| chest 组 | 43.67° | **12.76°** | −30.91° |
+| upperarm 组 | 30.68° | **25.74°** | −4.94° |
+| forearm 组 | 38.30° | **35.25°** | −3.05° |
+| world angle（次要） | 68.65° | 67.79° | **−0.86°** |
+| 3D position（次要） | 8.08%H | 7.95%H | **−0.13%H** |
+| contact recall / slide / penetration | — | — | 逐值不变 |
 | jerk ratio | 0.4226 | 0.4348 | +2.9% |
 
-- **9/9 held-out clips, 3/3 models, 3/3 camera views improve.**
-- Per model: si 37.72→24.94°, luoxi 35.41→22.22°, tiflos 39.52→26.59°.
-- Per view: front 38.30→23.85°, three-quarter 37.50→22.59°, side 36.86→27.31°.
-- Model: 2.18M-parameter BiGRU over 289 evidence features → 79 bounded residual
-  factors; TCN / Transformer / MRN / Graph / per-factor heads were compared and
-  BiGRU won after fallback.
-- The default is one-shot residual correction. Two-pass residual refinement was
-  implemented and evaluated, but had no stable gain and over-corrected side views;
-  it is not the default and is not called a closed-loop controller.
-- Full hand/face feedback is available as an opt-in experiment, not the default
-  (hand MAE is still worse than the previous full setting; T5 finger step grows).
+- **9/9 留出片段、3/3 模型、3/3 机位全部改善。**
+- 按模型：si 37.72→24.94°，luoxi 35.41→22.22°，tiflos 39.52→26.59°。
+- 按机位：front 38.30→23.85°，three-quarter 37.50→22.59°，side 36.86→27.31°。
+- 网络：2.18M 参数 BiGRU，289 维证据 → 79 维有界残差；TCN/Transformer/MRN/Graph/per-factor 均比较，BiGRU 最好。
+- 默认是 **one-shot** 结构残差后馈；2 轮 residual pass 已实现并评估，但没有稳定增益，因此不作为默认，也不称“闭环控制器”。
+- full 手/脸后馈是 opt-in 实验，不是默认：手部 MAE 仍不如上一版 full，T5 手指步长会增加。
 
-### Production export and long video
+### 产线、长视频与输出
 
-- Final VMD: **53 tracks** (23 body + 30 fingers), 4 IK bones off, no D/helper
-  tracks, zero finger translation, model-specific morphs.
-- T5 three-model 2K renders: D-chain **0/0**, verify **<2e-6**, scale warning 0.
-- Long-video stress test: **80.67 s / 2420 frames**, 9 chunks × 300 frames + 30
-  overlap, **24/24 seam checks** and **27/27 segment QC checks** pass, merged
-  jerk +2.56–3.19%, merged VMD remains 53 tracks/IK off/no D-helper.
-- One command produces VMD + 2K before/after + QC + manifest; cache/resume and
-  per-chunk rerun are built in.
+- 最终 VMD：**53 轨**（23 身体 + 30 手指）、4 个 IK 骨骼关、无 D/helper、手指位移 0、每模型 morph。
+- T5 三模型 2K：D 链 **0/0**、verify **<2e-6**、scale warning 0。
+- 长视频压力测试：**80.67 秒 / 2420 帧**，9 段 × 300 帧 + 30 帧重叠，**24/24 接缝**、**27/27 段级 QC** 通过；合并 jerk +2.56–3.19%，合并 VMD 仍 53 轨/IK off/无 D-helper。
+- 一条命令输出 VMD + 2K before/after + QC + manifest；缓存、断点、单段重跑、窗口回退均已接入。
 
 ---
 
-## Pipeline
+## 工作流
 
-```
-video
- → 30 fps normalization
- → optional 10 s chunks (1 s overlap)
- → GVHMR evidence
- → per-model PMX adapter
- → selective cleanup
- → contact / leg IK
- → hand + face evidence (L0–L3)
- → M6 v2 structural feedback (default: torso .85 / arm .30; hands/face/root off)
- → VMD (53 tracks, IK off, no D/helper)
- → 2K render + QC
- → long-video merge + seam/segment QC (when chunked)
+```text
+视频
+ → 30fps 归一化
+ → 可选 10 秒分段（1 秒重叠）
+ → GVHMR 证据
+ → 每模型 PMX adapter
+ → 选择性清理
+ → 接触 / 腿 IK
+ → 手 / 脸证据（L0–L3）
+ → M6 v2 结构后馈（默认 torso .85 / arm .30；手/脸/根关）
+ → VMD（53 轨、IK off、无 D/helper）
+ → 2K 渲染 + QC
+ → 长视频：根对齐 + smoothstep 合并 + 接缝/段级 QC
 ```
 
-The feedback is applied **after** the body/hand/face assembly and before VMD
-export. High-confidence observations and unmodified tracks are preserved bit-for-bit;
-bad windows fall back to the pre-feedback pose and are recorded in QC.
+后馈发生在身体/手/脸装配之后、VMD 导出之前。高置信观测和未修改轨逐帧保留；变差的窗口回退到后馈前姿态，并在 QC 中记录，不静默覆盖。
 
 ---
 
-## Quick start
+## 快速开始
 
 ```bash
 pip install -e .
 
-# short clip (T5-like)
+# 短片段（T5 类）
 python scripts/run_vtv.py \
   --video testdata/T5_高速舞蹈_001/001.mp4 \
   --out outputs/demo_t5 \
@@ -137,7 +134,7 @@ python scripts/run_vtv.py \
   --feedback v2 \
   --render
 
-# long video: chunking is automatic when longer than 10 s
+# 长视频：超过 10 秒自动切段、合并、段边界 QC
 python scripts/run_vtv.py \
   --video <long_video.mp4> \
   --out outputs/demo_long \
@@ -146,102 +143,98 @@ python scripts/run_vtv.py \
   --render
 ```
 
-Useful switches:
+常用开关：
 
-- `--feedback v2` — production default (recommended).
-- `--feedback default` — previous M3.5 conservative model.
-- `--feedback off` — pure `cleanup+ik+M3` baseline.
-- `--feedback v2_full` — opt-in hand/face residual experiment, not default.
-- `--no-render` — export VMD/QC only.
-- `--chunk-seconds`, `--overlap-seconds`, `--force-chunk` — long-video control.
+- `--feedback v2`：生产默认。
+- `--feedback default`：上一版 M3.5 保守模型。
+- `--feedback off`：纯 `cleanup+ik+M3` 基线。
+- `--feedback v2_full`：手/脸后馈实验，不默认。
+- `--no-render`：只导出 VMD/QC。
+- `--chunk-seconds`、`--overlap-seconds`、`--force-chunk`：长视频控制。
 
-Before a full run:
+正式跑之前：
 
 ```bash
 python scripts/check_env.py --models si,luoxi,tiflos --long
 ```
 
-See [docs/M5_使用指南.md](docs/M5_使用指南.md) for installation, input formats,
-models, cache, QC and failure diagnosis.
+安装、输入格式、模型 profile、缓存、QC 读法和失败诊断见 [docs/M5_使用指南.md](docs/M5_使用指南.md)。
 
 ---
 
-## Current scope
+## 当前边界
 
-| Area | Status |
+| 模块 | 状态 |
 |---|---|
-| Body / PMX adaptation | stable; three models; VMD/2K/QC |
-| Structural feedback v2 | production default; R3 held-out −34.5% main |
-| Hands | 30 tracks emitted; visible L0/L1 is still limited on T5; fallback is smooth |
-| Expression | blink + procedural fallback; full expression set not yet reliable |
-| Long video | 80.7 s stitched stress test passed; real continuous long clip is M7 |
-| Slow motion + chunks | not yet supported; explicit refusal |
-| Real-person video | not yet validated; M7/M8 |
-| Full hand/face feedback | opt-in; not default until T5 stability and hand accuracy improve |
+| 身体 / PMX 适配 | 稳定；三模型；VMD/2K/QC |
+| M6 v2 结构后馈 | 生产默认；R3 留出 main −34.5% |
+| 手部 | 30 轨已输出；T5 可见 L0/L1 仍有限，fallback 平滑 |
+| 表情 | 眨眼 + 程序化 fallback；完整表情集尚不可靠 |
+| 长视频 | 80.7 秒拼接压力测试通过；真实连续长片在 M7 |
+| 慢动作 + 多段 | 尚未支持；会明确拒绝 |
+| 真人视频 | 尚未验证；M7/M8 |
+| full 手/脸后馈 | opt-in；在 T5 稳定性/手部精度提升前不默认 |
 
-**Known limits are intentional and reported:** T5 has no GT; the long-video test is
-a stitched stress clip, not a real continuous take; hand/face coverage is
-input-limited; and the absolute body-relative error (24.59°) is improved but still
-not “zero manual correction”.
+**已明确保留的限制：** T5 没有 GT；长视频证据是拼接压力片，不是真实连续 take；手/脸覆盖受输入限制；24.59° 是显著改善，但仍不是“零人工修正”。
 
 ---
 
-## Repository layout
+## 仓库结构
 
-```
+```text
 src/vtv/
-  cli.py                 command line
-  pipeline.py            stage orchestration / manifests / cache / resume
-  longvideo.py           chunk planning / alignment / VMD merge / seam QC
-  framing.py             per-model camera fitting
-  feedback_apply.py      v2 residual apply / gates / fallback
-  feedback_net.py        BiGRU / TCN / Transformer / MRN / graph models
-  qc.py                  certificates / stability / change audit / secondary metrics
-  mmd/                   PMX / VMD read-write / Blender bake helpers
-scripts/                 run_vtv, data engine, training, evaluation, QC, render
-configs/                 model and pipeline configuration
-tests/                   unit + regression tests
-docs/                    execution reports and guides
-demo/                    release demo checklist (no restricted assets)
+  cli.py                 CLI
+  pipeline.py            阶段编排 / manifest / 缓存 / 断点
+  longvideo.py           分段 / 对齐 / VMD 合并 / 接缝 QC
+  framing.py             每模型自动取景
+  feedback_apply.py      v2 残差应用 / 门控 / 回退
+  feedback_net.py        BiGRU / TCN / Transformer / MRN / graph
+  qc.py                  证书 / 稳定性 / 未变审计 / 次要指标
+  mmd/                   PMX / VMD 读写 / Blender bake
+scripts/                 一条命令、数据引擎、训练、评测、QC、渲染
+configs/                 模型与管线配置
+tests/                   单元 + 回归测试
+docs/                    执行报告与开发指南
+demo/                    发布 demo 清单（不含受限素材）
+assets/                  README 视觉资源
 ```
 
 ---
 
-## License
+## 开源协议
 
-**Project code: GNU GPL v3.0 only (GPL-3.0-only).**
-Copyright (C) 2026 **SrQingChen**. See [LICENSE](LICENSE).
+**项目代码：GNU GPL v3.0 only（GPL-3.0-only）。**
+Copyright (C) 2026 **SrQingChen**。见 [LICENSE](LICENSE)。
 
-Third-party components remain under their own licenses; they are not relicensed
-by this project. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
-[MODEL_LICENSES.md](MODEL_LICENSES.md). In particular:
+第三方组件各自保留原协议，不被本项目重新授权：
 
-- vendored `mmd2gltf` code remains MIT;
-- MediaPipe runtime/models remain Apache-2.0;
-- GVHMR / SMPL-X and the project-trained feedback checkpoints carry research /
-  non-commercial constraints;
-- Blender, MMD Tools and FFmpeg are external tools with their own licenses.
+- vendored `mmd2gltf` 代码保持 MIT；
+- MediaPipe 运行时/模型保持 Apache-2.0；
+- GVHMR / SMPL-X 及本项目训练的后馈 checkpoint 继承研究 / 非商业约束；
+- Blender、MMD Tools、FFmpeg 是外部工具，遵循各自协议。
 
-**Not redistributed:** PMX models, SMPL/SMPL-X body models, GVHMR weights,
-project feedback checkpoints, VMD/R1–R3 motions and T1–T5 videos. They must be
-obtained by the user under their respective licenses.
+详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 与 [MODEL_LICENSES.md](MODEL_LICENSES.md)。
+
+**不随仓库分发：** PMX 模型、SMPL/SMPL-X body models、GVHMR 权重、项目后馈 checkpoint、VMD/R1–R3 动作、T1–T5 视频。使用者需按各自许可自行获取。
 
 ---
 
-## Documentation
+## 文档
 
-- [M6 execution: structural feedback v2](docs/M6_执行结果_后馈网络增强.md)
-- [M5 execution: long video and release candidate](docs/M5_执行结果_长视频与发布候选.md)
-- [M5 usage guide](docs/M5_使用指南.md)
-- [M4 execution: production pipeline](docs/M4_执行结果_产线集成与开源.md)
-- [Roadmap v2](开发路线图_v2.md)
-- [Third-party notices](THIRD_PARTY_NOTICES.md)
-- [Model licenses](MODEL_LICENSES.md)
+- [M6 执行结果：结构后馈 v2](docs/M6_执行结果_后馈网络增强.md)
+- [M6.0 研究/benchmark](docs/M6.0_研究调研与benchmark.md)
+- [M5 执行结果：长视频与发布候选](docs/M5_执行结果_长视频与发布候选.md)
+- [M5 使用指南](docs/M5_使用指南.md)
+- [M4 执行结果：产线集成](docs/M4_执行结果_产线集成与开源.md)
+- [开发路线图 v2](开发路线图_v2.md)
+- [第三方声明](THIRD_PARTY_NOTICES.md)
+- [模型许可](MODEL_LICENSES.md)
 
 ---
 
-## Author
+<div align="center">
 
-**SrQingChen**
-Project: [github.com/SrQingChen/video-to-vmd](https://github.com/SrQingChen/video-to-vmd)
-Maintainer/author metadata: [AUTHORS.md](AUTHORS.md)
+**VTV · Video to VMD**
+Copyright (C) 2026 **SrQingChen** · GPL-3.0-only
+
+</div>

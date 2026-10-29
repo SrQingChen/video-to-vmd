@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">VTV — Video to VMD</title>
+  <desc id="desc">VTV: video to VMD with structural feedback and PMX adaptation.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#090d1a"/>
+      <stop offset="0.55" stop-color="#111936"/>
+      <stop offset="1" stop-color="#231447"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.18" r="0.7">
+      <stop offset="0" stop-color="#6d28d9" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#6d28d9" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#9ca3af" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="320" rx="0" fill="url(#bg)"/>
+  <rect width="1200" height="320" fill="url(#grid)"/>
+  <rect width="1200" height="320" fill="url(#glow)"/>
+
+  <g opacity="0.9">
+    <path d="M790 76 L1130 76 L1030 244 L690 244 Z" fill="none" stroke="#22d3ee" stroke-opacity="0.24" stroke-width="2"/>
+    <path d="M860 48 L1160 48 L1100 188 L800 188 Z" fill="none" stroke="#f472b6" stroke-opacity="0.18" stroke-width="2"/>
+    <path d="M940 98 L1060 98" stroke="#818cf8" stroke-opacity="0.65" stroke-width="3" stroke-linecap="round"/>
+    <path d="M970 122 L1090 122" stroke="#22d3ee" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="1018" cy="170" r="26" fill="none" stroke="#818cf8" stroke-opacity="0.45" stroke-width="2"/>
+    <circle cx="1018" cy="170" r="8" fill="#f472b6" fill-opacity="0.75"/>
+  </g>
+
+  <text x="72" y="128" fill="#f8fafc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="82" font-weight="800" letter-spacing="3">VTV</text>
+  <text x="76" y="172" fill="#a5b4fc" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="8">VIDEO TO VMD</text>
+  <rect x="76" y="198" width="168" height="4" rx="2" fill="url(#accent)"/>
+  <text x="76" y="240" fill="#cbd5e1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" letter-spacing="2">STRUCTURAL FEEDBACK · PMX READY</text>
+</svg>

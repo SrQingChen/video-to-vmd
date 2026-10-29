@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  light-tests:
+    # The full pipeline needs the research backends (GVHMR/SMPL-X weights,
+    # Blender+MMD Tools, ffmpeg, a GPU).  CI covers the parts that are pure
+    # Python/NumPy and must never regress: chunk planning, VMD merge, seam
+    # continuity, auto-framing math and the VMD container round-trip.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install light dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install "numpy>=1.23.5,<2"
+      - name: Syntax check
+        run: python -m compileall -q src scripts tests
+      - name: Light unit tests
+        run: |
+          python tests/test_framing.py
+          python tests/test_longvideo.py
+          python tests/test_vmd_roundtrip.py
+          python tests/test_metrics_units.py
+      - name: Synthetic chunk/merge smoke (no assets)
+        run: python scripts/ci_smoke.py
+
+  # Full regression (needs torch/mediapipe/assets) is run on the development
+  # machine:
+  #   python tests/test_pipeline.py
+  #   python tests/test_feedback_apply.py
+  #   ... all 19+ test files, then check_env.py + a T5 smoke.
