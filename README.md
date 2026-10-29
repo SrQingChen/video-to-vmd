@@ -6,19 +6,26 @@
 
 **面向复杂 PMX 的结构化动作迁移、后馈纠正与可复现产线**
 
-把单目舞蹈视频转换成可以直接套到提弗洛斯 / 洛茜 / 祀等标准骨骼 PMX 上的 VMD。
+把单目舞蹈视频转换成可以直接套到复杂标准骨骼 PMX 上的 VMD。
 不是“关键点换个骨名”，而是把**目标模型适配、结构后馈、长视频 QC、可复现导出**做成一条完整链路。
 
-[![License](https://img.shields.io/badge/License-GPL--3.0--only-22c55e?style=for-the-badge&logo=gnu&logoColor=white)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)](pyproject.toml)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0EA5E9?style=for-the-badge&logo=windows&logoColor=white)](#快速开始)
-[![Status](https://img.shields.io/badge/Status-Research%20Preview-EF4444?style=for-the-badge)](#当前边界)
-[![CI](https://github.com/SrQingChen/video-to-vmd/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/SrQingChen/video-to-vmd/actions/workflows/ci.yml)
+<p align="center">
+  <img src="assets/badges/license.svg" alt="License: GPL-3.0-only" height="40"/>
+  <img src="assets/badges/python.svg" alt="Python 3.10" height="40"/>
+  <img src="assets/badges/ci.svg" alt="CI passing" height="40"/>
+  <img src="assets/badges/status.svg" alt="Research preview" height="40"/>
+</p>
 
-[![R3 held-out](https://img.shields.io/badge/R3%20held--out-24.59%C2%B0-7C3AED?style=for-the-badge)](#数据与结果)
-[![VMD](https://img.shields.io/badge/VMD-53%20tracks-111827?style=for-the-badge)](#数据与结果)
-[![Long video](https://img.shields.io/badge/Long%20video-2420%20frames-F59E0B?style=for-the-badge)](#数据与结果)
-[![Data](https://img.shields.io/badge/Paired%20data-18%2C430%20frames-0F766E?style=for-the-badge)](#数据与结果)
+<p align="center">
+  <img src="assets/badges/r3.svg" alt="R3 held-out 24.59 degrees" height="40"/>
+  <img src="assets/badges/vmd.svg" alt="VMD 53 tracks" height="40"/>
+  <img src="assets/badges/long.svg" alt="Long video 2420 frames" height="40"/>
+  <img src="assets/badges/data.svg" alt="Paired data 18430 frames" height="40"/>
+</p>
+
+<p align="center">
+  <code>#MMD</code> <code>#VMD</code> <code>#PMX</code> <code>#MotionCapture</code> <code>#StructuralFeedback</code> <code>#VideoToVMD</code>
+</p>
 
 **作者：SrQingChen**
 
@@ -86,7 +93,7 @@ VTV 把这些**目标模型与结构问题**放在第一位，而不是只做一
 | jerk ratio | 0.4226 | 0.4348 | +2.9% |
 
 - **9/9 留出片段、3/3 模型、3/3 机位全部改善。**
-- 按模型：si 37.72→24.94°，luoxi 35.41→22.22°，tiflos 39.52→26.59°。
+- 按模型 A/B/C：37.72→24.94°、35.41→22.22°、39.52→26.59°。
 - 按机位：front 38.30→23.85°，three-quarter 37.50→22.59°，side 36.86→27.31°。
 - 网络：2.18M 参数 BiGRU，289 维证据 → 79 维有界残差；TCN/Transformer/MRN/Graph/per-factor 均比较，BiGRU 最好。
 - 默认是 **one-shot** 结构残差后馈；2 轮 residual pass 已实现并评估，但没有稳定增益，因此不作为默认，也不称“闭环控制器”。
@@ -131,7 +138,7 @@ pip install -e .
 python scripts/run_vtv.py \
   --video testdata/T5_高速舞蹈_001/001.mp4 \
   --out outputs/demo_t5 \
-  --models si,luoxi,tiflos \
+  --models <model_a>,<model_b>,<model_c> \
   --feedback v2 \
   --render
 
@@ -139,7 +146,7 @@ python scripts/run_vtv.py \
 python scripts/run_vtv.py \
   --video <long_video.mp4> \
   --out outputs/demo_long \
-  --models si,luoxi,tiflos \
+  --models <model_a>,<model_b>,<model_c> \
   --feedback v2 \
   --render
 ```
@@ -156,7 +163,7 @@ python scripts/run_vtv.py \
 正式跑之前：
 
 ```bash
-python scripts/check_env.py --models si,luoxi,tiflos --long
+python scripts/check_env.py --models <model_a>,<model_b>,<model_c> --long
 ```
 
 安装、输入格式、模型 profile、缓存、QC 读法和失败诊断见 [docs/M5_使用指南.md](docs/M5_使用指南.md)。
